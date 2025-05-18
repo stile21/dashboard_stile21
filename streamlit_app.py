@@ -180,14 +180,22 @@ with col3:
 colonne_confronto = ["Vendite (incl. shopper senza gift)", "Resi", "Gift Card", "Shopper"]
 df1 = df[(df["Negozio"] == negozio1) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
 df2 = df[(df["Negozio"] == negozio2) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
+df1 = df[(df["Negozio"] == negozio1) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
+df2 = df[(df["Negozio"] == negozio2) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
+df3 = df[(df["Negozio"] == negozio3) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
+
 for col in colonne_confronto:
     s1 = df1[col].sum()
     s2 = df2[col].sum()
+    s3 = df3[col].sum()
     s1_fmt = f"{s1:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     s2_fmt = f"{s2:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    s3_fmt = f"{s3:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
     st.write(f"### {col}")
-    st.write(f"{negozio1}: **{s1_fmt} EUR**, {negozio2}: **{s2_fmt} EUR**")
-    fig = px.bar(x=[negozio1, negozio2], y=[s1, s2], title=f"{col} - Confronto tra negozi")
+    st.write(f"{negozio1}: **{s1_fmt} EUR**, {negozio2}: **{s2_fmt} EUR**, {negozio3}: **{s3_fmt} EUR**")
+
+    fig = px.bar(x=[negozio1, negozio2, negozio3], y=[s1, s2, s3], title=f"{col} - Confronto tra negozi")
     st.plotly_chart(fig, use_container_width=True)
 
 # Confronto tra periodi
