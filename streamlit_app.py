@@ -147,6 +147,70 @@ if negozio_sel != "Tutti":
     filtered_df = filtered_df[filtered_df["Negozio"] == negozio_sel]
 filtered_df = filtered_df[(filtered_df["Data"] >= pd.to_datetime(date_range[0])) & (filtered_df["Data"] <= pd.to_datetime(date_range[1]))]
 
+# 📅 Riquadro Date Assenti
+st.subheader("📅 Date assenti")
+
+# Date iniziali specifiche per ogni negozio
+date_iniziali = {
+    "Velletri (2063)": pd.to_datetime("2022-06-22"),
+    "Ariccia (2254)": pd.to_datetime("2023-12-23"),
+    "Terracina (2339)": pd.to_datetime("2025-05-18"),
+}
+
+note_file = "dati_note_mancanti.xlsx"
+
+# Carica file salvato se esiste
+if os.path.exists(note_file):
+    df_note = pd.read_excel(note_file)
+else:
+    df_note = pd.DataFrame(columns=["Negozio", "Data", "Note"])
+
+# Trova date mancanti con granularità giornaliera
+df_mancanti = pd.DataFrame()
+negozi_presenti = df["Negozio"].unique()
+
+for negozio in negozi_presenti:
+    if negozio not in date_iniziali:
+        continue
+    start_date = date_iniziali[negozio]
+    end_date = df[df["Negozio"] == negozio]["Data"].max()
+    tutte_le_date = pd.date_range(start=start_date, end=end_date, freq="D")
+    date_presenti = df[df["Negozio"] == negozio]["Data"].dt.normalize().unique()
+    date_mancanti = sorted(set(tutte_le_date.date) - set(pd.to_datetime(date_presenti).date))
+    for data in date_mancanti:
+        df_mancanti = pd.concat([
+            df_mancanti,
+            pd.DataFrame([{"Negozio": negozio, "Data": pd.to_datetime(data), "Note": ""}])
+        ], ignore_index=True)
+
+# Unione con eventuali note salvate
+df_mancanti["Data"] = pd.to_datetime(df_mancanti["Data"])
+df_note["Data"] = pd.to_datetime(df_note["Data"])
+df_merge = pd.merge(df_mancanti, df_note, on=["Negozio", "Data"], how="left", suffixes=("", "_y"))
+df_merge["Note"] = df_merge["Note_y"].combine_first(df_merge["Note"])
+df_merge = df_merge[["Negozio", "Data", "Note"]]
+
+# Visualizzazione raggruppata per negozio con menù a tendina
+for negozio in sorted(df_merge["Negozio"].unique()):
+    with st.expander(f"📂 {negozio} ({(df_merge['Negozio'] == negozio).sum()} date mancanti)"):
+        sotto_df = df_merge[df_merge["Negozio"] == negozio].sort_values("Data")
+        sotto_df_reset = sotto_df.reset_index(drop=True)
+        sotto_df_editato = st.data_editor(
+            sotto_df_reset,
+            column_config={
+                "Note": st.column_config.TextColumn("Note", help="Aggiungi una nota"),
+                "Data": st.column_config.DateColumn("Data"),
+            },
+            num_rows="dynamic",
+            use_container_width=True,
+            key=f"editor_{negozio}"
+        )
+        df_merge.loc[sotto_df.index, "Note"] = sotto_df_editato["Note"].values
+
+if st.button("💾 Salva note mancanti"):
+    df_merge.to_excel(note_file, index=False)
+    st.success("✅ Note salvate correttamente.")
+
 st.subheader("📊 Risultati filtrati")
 df_ordinato = filtered_df.sort_values(by="Data", ascending=False).reset_index(drop=True)
 df_ordinato.index = df_ordinato.index + 1  # per iniziare da 1
