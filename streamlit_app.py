@@ -96,8 +96,11 @@ def load_file(file):
     df["Data"] = pd.to_datetime(df["Data"])
     df["Negozio"] = df["Negozio"].replace({
     2063: "Velletri (2063)",
+    "2063": "Velletri (2063)",
     2254: "Ariccia (2254)",
-    2339: "Terracina (2339)"
+    "2254": "Ariccia (2254)",
+    2339: "Terracina (2339)",
+    "2339": "Terracina (2339)"
 })
     return df
 
