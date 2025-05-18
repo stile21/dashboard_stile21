@@ -148,7 +148,10 @@ if negozio_sel != "Tutti":
 filtered_df = filtered_df[(filtered_df["Data"] >= pd.to_datetime(date_range[0])) & (filtered_df["Data"] <= pd.to_datetime(date_range[1]))]
 
 st.subheader("📊 Risultati filtrati")
-st.dataframe(filtered_df.sort_values(by="Data", ascending=False), use_container_width=True)
+df_ordinato = filtered_df.sort_values(by="Data", ascending=False).reset_index(drop=True)
+df_ordinato.index = df_ordinato.index + 1  # per iniziare da 1
+df_ordinato.index.name = "N."
+st.dataframe(df_ordinato, use_container_width=True)
 
 # Totali
 st.markdown("---")
