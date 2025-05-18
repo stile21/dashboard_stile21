@@ -150,6 +150,9 @@ filtered_df = filtered_df[(filtered_df["Data"] >= pd.to_datetime(date_range[0]))
 # 📅 Riquadro Date Assenti
 st.subheader("📅 Date assenti")
 
+import holidays
+italian_holidays = holidays.IT()
+
 # Date iniziali specifiche per ogni negozio
 date_iniziali = {
     "Velletri (2063)": pd.to_datetime("2022-06-22"),
@@ -159,13 +162,13 @@ date_iniziali = {
 
 note_file = "dati_note_mancanti.xlsx"
 
-# Carica file salvato se esiste
+# Carica note salvate se esistono
 if os.path.exists(note_file):
     df_note = pd.read_excel(note_file)
 else:
     df_note = pd.DataFrame(columns=["Negozio", "Data", "Note"])
 
-# Trova date mancanti con granularità giornaliera
+# Trova date mancanti giornaliere per ogni negozio
 df_mancanti = pd.DataFrame()
 negozi_presenti = df["Negozio"].unique()
 
@@ -183,24 +186,29 @@ for negozio in negozi_presenti:
             pd.DataFrame([{"Negozio": negozio, "Data": pd.to_datetime(data), "Note": ""}])
         ], ignore_index=True)
 
-# Unione con eventuali note salvate
+# Merge con eventuali note salvate
 df_mancanti["Data"] = pd.to_datetime(df_mancanti["Data"])
 df_note["Data"] = pd.to_datetime(df_note["Data"])
 df_merge = pd.merge(df_mancanti, df_note, on=["Negozio", "Data"], how="left", suffixes=("", "_y"))
 df_merge["Note"] = df_merge["Note_y"].combine_first(df_merge["Note"])
 df_merge = df_merge[["Negozio", "Data", "Note"]]
 
-# Visualizzazione raggruppata per negozio con menù a tendina
+# Raggruppa per negozio con colore festivo
 for negozio in sorted(df_merge["Negozio"].unique()):
     with st.expander(f"📂 {negozio} ({(df_merge['Negozio'] == negozio).sum()} date mancanti)"):
-        sotto_df = df_merge[df_merge["Negozio"] == negozio].sort_values("Data")
+        sotto_df = df_merge[df_merge["Negozio"] == negozio].sort_values("Data").copy()
+        sotto_df["Festività"] = sotto_df["Data"].apply(lambda d: italian_holidays.get(d.date()) or "")
         sotto_df_reset = sotto_df.reset_index(drop=True)
+
+        st.write("🟥 Le festività sono evidenziate nella colonna 'Festività'")
         sotto_df_editato = st.data_editor(
             sotto_df_reset,
             column_config={
                 "Note": st.column_config.TextColumn("Note", help="Aggiungi una nota"),
                 "Data": st.column_config.DateColumn("Data"),
+                "Festività": st.column_config.TextColumn("Festività", help="Giorno festivo riconosciuto in Italia"),
             },
+            column_order=["Data", "Festività", "Note"],
             num_rows="dynamic",
             use_container_width=True,
             key=f"editor_{negozio}"
