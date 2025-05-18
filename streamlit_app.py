@@ -6,38 +6,6 @@ import os
 from fpdf import FPDF
 import base64
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
-# Funzione per identificare le date assenti
-def trova_date_assenti():
-    import os
-    import pandas as pd
-
-    date_per_negozio = {}
-    for file in os.listdir("dati_salvati"):
-        if file.endswith(".xlsx"):
-            try:
-                df = pd.read_excel(os.path.join("dati_salvati", file), sheet_name="Dettaglio Giornaliero")
-                df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
-                df = df.dropna(subset=["Data", "Negozio"])
-                df["Periodo"] = df["Data"].dt.to_period("M").astype(str)
-                for negozio, gruppo in df.groupby("Negozio"):
-                    if negozio not in date_per_negozio:
-                        date_per_negozio[negozio] = set()
-                    date_per_negozio[negozio].update(gruppo["Periodo"].tolist())
-            except:
-                continue
-
-    mesi_assenti = []
-    if date_per_negozio:
-        min_data = min(min(p) for p in date_per_negozio.values())
-        max_data = max(max(p) for p in date_per_negozio.values())
-        tutti_i_mesi = pd.period_range(start=min_data, end=max_data, freq="M").astype(str).tolist()
-
-        for negozio, mesi_presenti in date_per_negozio.items():
-            mancanti = sorted(set(tutti_i_mesi) - mesi_presenti)
-            for mese in mancanti:
-                mesi_assenti.append({"Negozio": negozio, "Data": mese, "Note": ""})
-
-    return pd.DataFrame(mesi_assenti)
 # Layout + Footer
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 st.markdown("""
@@ -178,7 +146,7 @@ filtered_df = df.copy()
 if negozio_sel != "Tutti":
     filtered_df = filtered_df[filtered_df["Negozio"] == negozio_sel]
 filtered_df = filtered_df[(filtered_df["Data"] >= pd.to_datetime(date_range[0])) & (filtered_df["Data"] <= pd.to_datetime(date_range[1]))]
-    
+
 st.subheader("📊 Risultati filtrati")
 df_ordinato = filtered_df.sort_values(by="Data", ascending=False).reset_index(drop=True)
 df_ordinato.index = df_ordinato.index + 1  # per iniziare da 1
