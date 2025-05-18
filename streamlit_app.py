@@ -166,20 +166,23 @@ for k in colonne:
         val = totali.get(k, 0.0)
         st.write(f"**{k}**: {val:,.2f} EUR".replace(",", "X").replace(".", ",").replace("X", "."))
 
-# Confronti
+# Confronto tra negozi
 st.markdown("---")
 st.subheader("📍 Confronto tra negozi")
+
+# Imposta negozi predefiniti diversi
+negozi_unici = negozi[:3] if len(negozi) >= 3 else negozi + [""] * (3 - len(negozi))
+
 col1, col2, col3 = st.columns(3)
 with col1:
-    negozio1 = st.selectbox("Negozio 1", negozi, key="negozio1")
+    negozio1 = st.selectbox("Negozio 1", negozi, index=negozi.index(negozi_unici[0]), key="negozio1")
 with col2:
-    negozio2 = st.selectbox("Negozio 2", negozi, key="negozio2")
+    negozio2 = st.selectbox("Negozio 2", negozi, index=negozi.index(negozi_unici[1]), key="negozio2")
 with col3:
-    negozio3 = st.selectbox("Negozio 3", negozi, key="negozio3")
+    negozio3 = st.selectbox("Negozio 3", negozi, index=negozi.index(negozi_unici[2]), key="negozio3")
 
 colonne_confronto = ["Vendite (incl. shopper senza gift)", "Resi", "Gift Card", "Shopper"]
-df1 = df[(df["Negozio"] == negozio1) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
-df2 = df[(df["Negozio"] == negozio2) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
+
 df1 = df[(df["Negozio"] == negozio1) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
 df2 = df[(df["Negozio"] == negozio2) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
 df3 = df[(df["Negozio"] == negozio3) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
