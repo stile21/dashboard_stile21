@@ -4,6 +4,7 @@ import plotly.express as px
 from datetime import datetime
 import os
 from fpdf import FPDF
+from datetime import datetime
 import base64
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
 # Layout + Footer
@@ -299,23 +300,89 @@ if len(p1) == 2 and len(p2) == 2:
         fig = px.bar(x=["Periodo 1", "Periodo 2"], y=[s1, s2], title=f"{col} - {negozio_conf}")
         st.plotly_chart(fig, use_container_width=True)
 
-# PDF export
-st.markdown("---")
-st.subheader("📤 Esporta in PDF")
-pdf = FPDF()
-pdf.add_page()
-if os.path.exists("logo_terranova_resized.jpg"):
-    pdf.image("logo_terranova_resized.jpg", x=10, y=8, w=60)
-pdf.set_font("Arial", size=12)
-pdf.ln(30)
-pdf.cell(200, 10, txt="Report Incassi Stile21", ln=True, align="C")
-pdf.cell(200, 10, txt=f"Periodo: {date_range[0]} - {date_range[1]}", ln=True, align="C")
-pdf.cell(200, 10, txt=f"Negozio: {negozio_sel}", ln=True, align="C")
-pdf.ln(10)
-for k in colonne:
-    val = f"{totali[k]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    pdf.cell(200, 10, txt=f"{k}: {val} EUR", ln=True)
-pdf_output = pdf.output(dest="S").encode("latin1")
-b64_pdf = base64.b64encode(pdf_output).decode()
-href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="riepilogo_incassi.pdf">📄 Scarica PDF</a>'
-st.markdown(href, unsafe_allow_html=True)
+# ✅ Esporta PDF – Confronto tra Negozi (con fpdf2)
+if st.button("📤 Esporta PDF – Confronto tra Negozi"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", 'B', 14)
+    pdf.cell(200, 10, txt="Confronto tra Negozi", ln=True, align="C")
+    pdf.set_font("Helvetica", size=12)
+    pdf.cell(200, 10, txt=f"Periodo: {date_range[0]} - {date_range[1]}", ln=True, align="C")
+    pdf.ln(10)
+
+    for col in colonne_confronto:
+        s1 = df1[col].sum()
+        s2 = df2[col].sum()
+        s3 = df3[col].sum()
+        s1_fmt = f"{s1:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        s2_fmt = f"{s2:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        s3_fmt = f"{s3:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        pdf.set_font("Helvetica", 'B', 12)
+        pdf.cell(200, 10, txt=col, ln=True)
+        pdf.set_font("Helvetica", size=12)
+        pdf.cell(200, 10, txt=f"{negozio1}: {s1_fmt} EUR", ln=True)
+        pdf.cell(200, 10, txt=f"{negozio2}: {s2_fmt} EUR", ln=True)
+        pdf.cell(200, 10, txt=f"{negozio3}: {s3_fmt} EUR", ln=True)
+        pdf.ln(5)
+
+    pdf_output = pdf.output(dest="S")
+    b64 = base64.b64encode(pdf_output).decode()
+    st.markdown(
+        f"""<a href="data:application/pdf;base64,{b64}" download="confronto_negozi.pdf">
+            <button style='padding:10px 20px;background-color:#4CAF50;color:white;border:none;border-radius:5px;'>
+            📄 Scarica PDF Confronto Negozi
+            </button>
+        </a>""",
+        unsafe_allow_html=True
+    )
+
+
+# ✅ Esporta PDF – Confronto tra Periodi (con indentazione corretta)
+if st.button("📤 Esporta PDF – Confronto tra Periodi"):
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    if os.path.exists("logo_terranova_resized.jpg"):
+        pdf.image("logo_terranova_resized.jpg", x=10, y=8, w=50)
+        pdf.ln(25)
+
+    pdf.set_font("Helvetica", 'B', 16)
+    titolo = f"Confronto tra Periodi – {negozio_conf}".replace("–", "-")
+    pdf.cell(0, 10, titolo, ln=True, align="C")
+    pdf.set_font("Helvetica", '', 12)
+    pdf.cell(0, 10, f"Periodo 1: {p1[0].strftime('%d/%m/%Y')} - {p1[1].strftime('%d/%m/%Y')}", ln=True, align="C")
+    pdf.cell(0, 10, f"Periodo 2: {p2[0].strftime('%d/%m/%Y')} - {p2[1].strftime('%d/%m/%Y')}", ln=True, align="C")
+    pdf.cell(0, 10, f"Data di esportazione: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align="C")
+    pdf.ln(10)
+
+    for col in colonne:
+        s1 = d1[col].sum()
+        s2 = d2[col].sum()
+        diff = s2 - s1
+        perc = (diff / s1 * 100) if s1 != 0 else 0
+
+        s1_fmt = f"{s1:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        s2_fmt = f"{s2:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        diff_fmt = f"{diff:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        perc_fmt = f"{perc:.2f}".replace(".", ",")
+
+        pdf.set_font("Helvetica", 'B', 12)
+        pdf.cell(0, 10, col, ln=True)
+        pdf.set_font("Helvetica", '', 11)
+        pdf.cell(0, 8, f"Periodo 1: {s1_fmt} EUR", ln=True)
+        pdf.cell(0, 8, f"Periodo 2: {s2_fmt} EUR", ln=True)
+        pdf.cell(0, 8, f"Differenza: {diff_fmt} EUR ({perc_fmt}%)", ln=True)
+        pdf.ln(4)
+
+    pdf_output = pdf.output(dest="S")
+    b64 = base64.b64encode(pdf_output).decode()
+    st.markdown(
+        f"""<a href="data:application/pdf;base64,{b64}" download="confronto_periodi.pdf">
+            <button style='padding:10px 20px;background-color:#4CAF50;color:white;border:none;border-radius:5px;'>
+            📄 Scarica PDF Confronto Periodi
+            </button>
+        </a>""",
+        unsafe_allow_html=True
+    )
