@@ -169,11 +169,13 @@ for k in colonne:
 # Confronti
 st.markdown("---")
 st.subheader("📍 Confronto tra negozi")
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 with col1:
     negozio1 = st.selectbox("Negozio 1", negozi, key="negozio1")
 with col2:
     negozio2 = st.selectbox("Negozio 2", negozi, key="negozio2")
+with col3:
+    negozio3 = st.selectbox("Negozio 3", negozi, key="negozio3")
 
 colonne_confronto = ["Vendite (incl. shopper senza gift)", "Resi", "Gift Card", "Shopper"]
 df1 = df[(df["Negozio"] == negozio1) & (df["Data"].between(pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])))]
