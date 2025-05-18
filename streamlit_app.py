@@ -147,6 +147,31 @@ if negozio_sel != "Tutti":
     filtered_df = filtered_df[filtered_df["Negozio"] == negozio_sel]
 filtered_df = filtered_df[(filtered_df["Data"] >= pd.to_datetime(date_range[0])) & (filtered_df["Data"] <= pd.to_datetime(date_range[1]))]
 
+st.subheader("📅 Date assenti")
+
+# Carica il file modificato se esiste
+note_file = "dati_note_mancanti.xlsx"
+if os.path.exists(note_file):
+    df_date_assenti = pd.read_excel(note_file)
+else:
+    df_date_assenti = trova_date_assenti()
+
+# Visualizza tabella editabile
+df_editato = st.data_editor(
+    df_date_assenti,
+    column_config={
+        "Note": st.column_config.TextColumn("Note", help="Aggiungi una nota, se necessario"),
+    },
+    num_rows="dynamic",
+    use_container_width=True,
+    key="editor_date_assenti"
+)
+
+# Salva modifiche manuali
+if st.button("💾 Salva modifiche date assenti"):
+    df_editato.to_excel(note_file, index=False)
+    st.success("✅ Modifiche salvate in 'dati_note_mancanti.xlsx'")
+    
 st.subheader("📊 Risultati filtrati")
 df_ordinato = filtered_df.sort_values(by="Data", ascending=False).reset_index(drop=True)
 df_ordinato.index = df_ordinato.index + 1  # per iniziare da 1
