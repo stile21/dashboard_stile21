@@ -6,3 +6,4 @@ plotly
 fpdf
 bcrypt
 holidays
+pydrive2
