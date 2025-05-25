@@ -252,7 +252,7 @@ st.markdown("---")
 st.subheader("📍 Confronto tra negozi")
 
 # Imposta negozi predefiniti diversi
-negozi_unici = negozi[:3] if len(negozi) >= 3 else negozi + [""] * (3 - len(negozi))
+negozi_unici = (negozi[:3] + [""] * 3)[:3]
 
 col1, col2, col3 = st.columns(3)
 with col1:
