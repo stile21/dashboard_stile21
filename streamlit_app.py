@@ -7,6 +7,7 @@ from fpdf import FPDF
 from datetime import datetime
 import base64
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
+from drive_utils import connect_drive, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
 # Layout + Footer
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 st.markdown("""
@@ -56,6 +57,11 @@ if not st.session_state.login_ok:
     st.stop()
 
 username = st.session_state.username
+
+# === Google Drive: connessione e download iniziale ===
+drive = connect_drive()
+folder_id = get_or_create_drive_folder(drive)
+download_all_from_drive(drive, folder_id, "dati_salvati")
 
 # Menu modifica utenti
 if username == "admin":
@@ -111,10 +117,12 @@ if not os.path.exists("dati_salvati"):
 
 if uploaded_file:
     nome_file = uploaded_file.name
-    with open(os.path.join("dati_salvati", nome_file), "wb") as f:
+    file_path = os.path.join("dati_salvati", nome_file)
+    with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.success(f"File salvato come {nome_file}")
-
+    upload_file_to_drive(drive, folder_id, file_path)
+    st.success(f"✅ File caricato e salvato su Google Drive: {nome_file}")
+    
 # Carica tutti i dati salvati
 all_dfs = []
 for file in os.listdir("dati_salvati"):
