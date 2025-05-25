@@ -6,6 +6,7 @@ import os
 from fpdf import FPDF
 from datetime import datetime
 import base64
+os.environ["STREAMLIT_CLOUD"] = "1"
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
 from drive_utils import connect_drive, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
 # Layout + Footer
