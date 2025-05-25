@@ -4,26 +4,30 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from oauth2client.client import OAuth2WebServerFlow
 
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+import os
+
 def connect_drive():
-    import streamlit as st
-    flow = OAuth2WebServerFlow(
-        client_id=st.secrets["google_drive"]["client_id"],
-        client_secret=st.secrets["google_drive"]["client_secret"],
-        scope="https://www.googleapis.com/auth/drive",
-        redirect_uri="urn:ietf:wg:oauth:2.0:oob"
-    )
-    auth_url = flow.step1_get_authorize_url()
-    st.info("🔐 Autorizza l'accesso a Google Drive:")
-    st.write(f"[Autorizza qui]({auth_url})")
-    code = st.text_input("🔑 Incolla il codice di autorizzazione qui sotto:")
-    if not code:
-        st.stop()
-    credentials = flow.step2_exchange(code)
     gauth = GoogleAuth()
-    gauth.credentials = credentials
-    drive = GoogleDrive(gauth)
-    st.success("✅ Connessione a Google Drive riuscita.")
-    return drive
+
+    # Percorso per salvare il token
+    token_dir = "/mount/tmp" if os.environ.get("STREAMLIT_CLOUD") else "."
+    token_file = os.path.join(token_dir, "token_drive.json")
+
+    gauth.LoadCredentialsFile(token_file)
+
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth()  # Primo accesso
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+    else:
+        gauth.Authorize()
+
+    gauth.SaveCredentialsFile(token_file)
+
+    return GoogleDrive(gauth)
+    
 
 def get_or_create_drive_folder(drive, folder_name="StreamlitAppFiles"):
     folders = drive.ListFile({
