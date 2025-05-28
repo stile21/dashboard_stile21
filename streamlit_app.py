@@ -63,13 +63,6 @@ drive = connect_drive()
 folder_id = get_or_create_drive_folder(drive)
 download_all_from_drive(drive, folder_id, "dati_salvati")
 
-# === Google Drive Integration ===
-import os
-os.environ["STREAMLIT_CLOUD"] = "1"  # Permette il salvataggio del token su Streamlit Cloud
-drive = connect_drive()
-folder_id = get_or_create_drive_folder(drive)
-download_all_from_drive(drive, folder_id, "dati_salvati")
-
 # Menu modifica utenti
 if username == "admin":
     st.markdown("---")
