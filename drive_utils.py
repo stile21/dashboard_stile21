@@ -7,7 +7,7 @@ import os
 def connect_drive():
     gauth = GoogleAuth()
 
-    # Crea client_secrets.json dinamicamente da st.secrets
+    # Usa i secrets
     client_config = {
         "client_id": st.secrets["google_drive"]["client_id"],
         "client_secret": st.secrets["google_drive"]["client_secret"],
@@ -23,6 +23,24 @@ def connect_drive():
         json.dump({"installed": client_config}, f)
 
     gauth.LoadClientConfigFile("conf/client_secrets.json")
+
+    # Questo è il file che caricherai su GitHub una volta autenticato in locale
+    creds_path = "conf/mycreds.txt"
+
+    try:
+        gauth.LoadCredentialsFile(creds_path)
+    except:
+        gauth.LocalWebserverAuth()  # Solo in locale, non Streamlit Cloud
+        gauth.SaveCredentialsFile(creds_path)
+
+    if gauth.credentials is None:
+        raise RuntimeError("⚠️ Autenticazione fallita. Esegui in locale per autenticare e salvare il token.")
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+    else:
+        gauth.Authorize()
+
+    return GoogleDrive(gauth)
 
     # Salvataggio token per login automatico
     gauth.LoadCredentialsFile("conf/mycreds.txt")
