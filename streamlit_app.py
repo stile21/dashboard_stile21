@@ -58,6 +58,11 @@ if not st.session_state.login_ok:
 
 username = st.session_state.username
 
+# === Google Drive Sync ===
+drive = connect_drive()
+folder_id = get_or_create_drive_folder(drive)
+download_all_from_drive(drive, folder_id, "dati_salvati")
+
 # === Google Drive Integration ===
 import os
 os.environ["STREAMLIT_CLOUD"] = "1"  # Permette il salvataggio del token su Streamlit Cloud
@@ -119,11 +124,12 @@ if not os.path.exists("dati_salvati"):
 
 if uploaded_file:
     nome_file = uploaded_file.name
-    file_path = os.path.join("dati_salvati", nome_file)
-    with open(file_path, "wb") as f:
+    local_path = os.path.join("dati_salvati", nome_file)
+    os.makedirs("dati_salvati", exist_ok=True)
+    with open(local_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    upload_file_to_drive(drive, folder_id, file_path)
-    st.success(f"✅ File caricato e salvato su Google Drive: {nome_file}")
+    upload_file_to_drive(drive, folder_id, local_path)
+    st.success(f"✅ File caricato correttamente e salvato su Google Drive.")
 
 # Carica tutti i dati salvati
 all_dfs = []
