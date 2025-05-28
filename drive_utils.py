@@ -1,68 +1,65 @@
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 import os
-import streamlit as st
 
-# Autenticazione con caching del token
+# === AUTENTICAZIONE ===
 def connect_drive():
     gauth = GoogleAuth()
 
-    # Usa client_id/client_secret da secrets TOML
-    gauth.settings['client_config_backend'] = 'settings'
-    gauth.settings['client_config'] = {
+    # Crea client_secrets.json dinamicamente da st.secrets
+    client_config = {
         "client_id": st.secrets["google_drive"]["client_id"],
         "client_secret": st.secrets["google_drive"]["client_secret"],
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
-        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
+        "client_type": "web"
     }
 
-    # Percorso di salvataggio token (supportato da Streamlit Cloud)
-    token_path = "/mount/tmp/token_drive.json" if "STREAMLIT_CLOUD" in os.environ else "token_drive.json"
-    gauth.LoadCredentialsFile(token_path)
+    os.makedirs("conf", exist_ok=True)
+    with open("conf/client_secrets.json", "w") as f:
+        import json
+        json.dump({"installed": client_config}, f)
 
+    gauth.LoadClientConfigFile("conf/client_secrets.json")
+
+    # Salvataggio token per login automatico
+    gauth.LoadCredentialsFile("conf/mycreds.txt")
     if gauth.credentials is None:
         gauth.LocalWebserverAuth()
     elif gauth.access_token_expired:
         gauth.Refresh()
     else:
         gauth.Authorize()
+    gauth.SaveCredentialsFile("conf/mycreds.txt")
 
-    gauth.SaveCredentialsFile(token_path)
     return GoogleDrive(gauth)
 
-# Ottieni o crea la cartella "dati_salvati" su Drive
+# === CREA CARTELLA DATI (se non esiste) ===
 def get_or_create_drive_folder(drive, folder_name="dati_salvati"):
-    file_list = drive.ListFile({
-        'q': "title='%s' and mimeType='application/vnd.google-apps.folder' and trashed=false" % folder_name
-    }).GetList()
-
-    if file_list:
-        return file_list[0]['id']
-    else:
-        folder_metadata = {
-            'title': folder_name,
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
-        folder = drive.CreateFile(folder_metadata)
-        folder.Upload()
+    file_list = drive.ListFile({'q': "mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()
+    folder = next((f for f in file_list if f['title'] == folder_name), None)
+    if folder:
         return folder['id']
+    folder_metadata = {'title': folder_name, 'mimeType': 'application/vnd.google-apps.folder'}
+    folder = drive.CreateFile(folder_metadata)
+    folder.Upload()
+    return folder['id']
 
-# Carica un file su Google Drive dentro la cartella
-def upload_file_to_drive(drive, folder_id, file_path):
-    file_name = os.path.basename(file_path)
-    gfile = drive.CreateFile({'title': file_name, 'parents': [{'id': folder_id}]})
-    gfile.SetContentFile(file_path)
-    gfile.Upload()
+# === CARICA UN FILE ===
+def upload_file_to_drive(drive, folder_id, local_path):
+    file_drive = drive.CreateFile({
+        "title": os.path.basename(local_path),
+        "parents": [{"id": folder_id}]
+    })
+    file_drive.SetContentFile(local_path)
+    file_drive.Upload()
 
-# Scarica tutti i file da Drive nella cartella locale
-def download_all_from_drive(drive, folder_id, local_folder):
+# === SCARICA TUTTI I FILE ===
+def download_all_from_drive(drive, folder_id, local_folder="dati_salvati"):
     os.makedirs(local_folder, exist_ok=True)
-    file_list = drive.ListFile({
-        'q': f"'{folder_id}' in parents and trashed=false"
-    }).GetList()
-
-    for f in file_list:
-        local_path = os.path.join(local_folder, f['title'])
-        if not os.path.exists(local_path):  # evita sovrascritture inutili
-            f.GetContentFile(local_path)
+    file_list = drive.ListFile({'q': f"'{folder_id}' in parents and trashed=false"}).GetList()
+    for file_drive in file_list:
+        dest_path = os.path.join(local_folder, file_drive['title'])
+        if not os.path.exists(dest_path):
+            file_drive.GetContentFile(dest_path)
