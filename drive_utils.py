@@ -27,7 +27,10 @@ def connect_drive():
     # Salvataggio token per login automatico
     gauth.LoadCredentialsFile("conf/mycreds.txt")
     if gauth.credentials is None:
-        gauth.LocalWebserverAuth()
+        if os.environ.get("STREAMLIT_CLOUD") == "1":
+            gauth.CommandLineAuth()  # Evita il problema del browser su Streamlit Cloud
+        else:
+            gauth.LocalWebserverAuth()
     elif gauth.access_token_expired:
         gauth.Refresh()
     else:
