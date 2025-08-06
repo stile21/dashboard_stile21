@@ -7,16 +7,17 @@ from fpdf import FPDF
 from datetime import datetime
 import base64
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
-from drive_utils import connect_drive, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
+from drive_utils import get_drive_service, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
+
 # Layout + Footer
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 
 # Connessione a Google Drive
 service = get_drive_service()
-folder_id = get_or_create_drive_folder(drive, "dati_salvati")
+folder_id = get_or_create_drive_folder(service, "dati_salvati")
 
 # Scarica tutti i file salvati da Google Drive all'avvio
-download_all_from_drive(drive, folder_id, "dati_salvati")
+download_all_from_drive(service, folder_id, "dati_salvati")
 
 st.markdown("""
     <style>
