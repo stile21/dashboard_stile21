@@ -1,4 +1,10 @@
 {
-    "admin": "$2b$12$XXeroNZALx7FpQTbqwGKqepHkjJgk.OhLbiK8.whPLpOYDRmjgRXK",
-    "stile21": "$2b$12$OJFh/tfMn/iFt.L4EAAKBu4eh2Gvle23jINy.nkFoupf6wJfkWaNS"
+  "admin": {
+    "password": "$2b$12$XXeroNZALx7FpQTbqwGKqepHkjJgk.OhLbiK8.whPLpOYDRmjgRXK",
+    "ruolo": "admin"
+  },
+  "stile21": {
+    "password": "$2b$12$OJFh/tfMn/iFt.L4EAAKBu4eh2Gvle23jINy.nkFoupf6wJfkWaNS",
+    "ruolo": "utente"
+  }
 }
