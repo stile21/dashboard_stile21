@@ -50,12 +50,17 @@ with st.sidebar:
 
         if username and password:
             utenti = carica_utenti()
-            if username in utenti and verifica_password(password, utenti[username]):
-                st.session_state.login_ok = True
-                st.session_state.username = username
-                st.rerun()
-            else:
-                st.error("Credenziali non valide.")
+            if username in utenti:
+    st.write("🔍 Username inserito:", username)
+    st.write("🔐 Password hashata attesa:", utenti[username])
+    st.write("✅ Verifica:", verifica_password(password, utenti[username]))
+
+    if verifica_password(password, utenti[username]):
+        st.session_state["login_ok"] = True
+    else:
+        st.error("❌ Credenziali non valide.")
+    else:
+        st.error("⚠️ Utente non trovato.")
     else:
         st.success(f"👋 Benvenuto, {st.session_state.username}")
         if st.button("🔓 Logout"):
