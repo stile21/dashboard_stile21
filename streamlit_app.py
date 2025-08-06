@@ -7,7 +7,7 @@ from fpdf import FPDF
 from datetime import datetime
 import base64
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
-from drive_utils import get_drive_service, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
+from drive_service import get_drive_service, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
 
 # Layout + Footer
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
@@ -124,7 +124,7 @@ if uploaded_file:
     local_path = os.path.join("dati_salvati", nome_file)
     with open(local_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    upload_file_to_drive(local_path, drive, folder_id)
+    upload_file_to_drive(service, folder_id, local_path)
     st.success(f"✅ File salvato localmente e su Google Drive: {nome_file}")
 
 # Carica tutti i dati salvati
