@@ -3,6 +3,8 @@ import streamlit as st
 import google.auth
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+import io
 
 
 # ============================
@@ -14,7 +16,9 @@ def get_drive_service():
     # Converte correttamente la private_key
     creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
 
-    creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/drive"])
+    creds = service_account.Credentials.from_service_account_info(
+        creds_dict, scopes=["https://www.googleapis.com/auth/drive"]
+    )
     service = build("drive", "v3", credentials=creds)
     return service
 
@@ -28,7 +32,7 @@ def get_or_create_drive_folder(service, folder_name):
     items = results.get("files", [])
 
     if items:
-        return items[0]["id"]  # folder già esistente
+        return items[0]["id"]  # Cartella già esistente
 
     file_metadata = {
         "name": folder_name,
@@ -51,26 +55,25 @@ def upload_file_to_drive(service, folder_id, file_path):
     media = MediaFileUpload(file_path, resumable=True)
     file = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
     return file.get("id")
-def download_all_from_drive(service, folder_id, local_folder="dati_salvati"):
-    from googleapiclient.http import MediaIoBaseDownload
-    import io
 
+
+# ========================
+# DOWNLOAD TUTTI I FILE DELLA CARTELLA
+# ========================
+def download_all_from_drive(service, folder_id, local_folder="dati_salvati"):
     os.makedirs(local_folder, exist_ok=True)
 
-    # Lista dei file nella cartella di Drive
     results = service.files().list(
         q=f"'{folder_id}' in parents and trashed=false",
         spaces="drive",
         fields="files(id, name)"
     ).execute()
 
-    items = results.get("files", [])
-
-    for item in items:
-        file_id = item["id"]
-        file_name = item["name"]
-        request = service.files().get_media(fileId=file_id)
-        fh = io.FileIO(os.path.join(local_folder, file_name), "wb")
+    files = results.get("files", [])
+    for file in files:
+        request = service.files().get_media(fileId=file["id"])
+        file_path = os.path.join(local_folder, file["name"])
+        fh = io.FileIO(file_path, "wb")
         downloader = MediaIoBaseDownload(fh, request)
         done = False
         while not done:
