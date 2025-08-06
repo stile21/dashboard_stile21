@@ -12,7 +12,7 @@ from drive_utils import connect_drive, get_or_create_drive_folder, upload_file_t
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 
 # Connessione a Google Drive
-drive = connect_drive()
+service = get_drive_service()
 folder_id = get_or_create_drive_folder(drive, "dati_salvati")
 
 # Scarica tutti i file salvati da Google Drive all'avvio
