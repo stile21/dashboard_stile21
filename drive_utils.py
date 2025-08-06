@@ -51,3 +51,4 @@ def upload_file_to_drive(service, folder_id, file_path):
     media = MediaFileUpload(file_path, resumable=True)
     file = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
     return file.get("id")
+def download_all_from_drive(service, folder_id, local_folder="dati_salvati"):
