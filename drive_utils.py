@@ -52,3 +52,26 @@ def upload_file_to_drive(service, folder_id, file_path):
     file = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
     return file.get("id")
 def download_all_from_drive(service, folder_id, local_folder="dati_salvati"):
+    from googleapiclient.http import MediaIoBaseDownload
+    import io
+
+    os.makedirs(local_folder, exist_ok=True)
+
+    # Lista dei file nella cartella di Drive
+    results = service.files().list(
+        q=f"'{folder_id}' in parents and trashed=false",
+        spaces="drive",
+        fields="files(id, name)"
+    ).execute()
+
+    items = results.get("files", [])
+
+    for item in items:
+        file_id = item["id"]
+        file_name = item["name"]
+        request = service.files().get_media(fileId=file_id)
+        fh = io.FileIO(os.path.join(local_folder, file_name), "wb")
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
