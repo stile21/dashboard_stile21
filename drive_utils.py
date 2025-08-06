@@ -1,27 +1,35 @@
 import os
-import io
+import streamlit as st
+import google.auth
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-import streamlit as st
 
 
+# ============================
+# CREA ISTANZA DI GOOGLE DRIVE
+# ============================
 def get_drive_service():
     creds_dict = st.secrets["google_service_account"]
-    creds = service_account.Credentials.from_service_account_info(creds_dict)
-    return build("drive", "v3", credentials=creds)
+
+    # Converte correttamente la private_key
+    creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+
+    creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/drive"])
+    service = build("drive", "v3", credentials=creds)
+    return service
 
 
+# ==========================================================
+# CREA O TROVA UNA CARTELLA NEL DRIVE CON NOME SPECIFICATO
+# ==========================================================
 def get_or_create_drive_folder(service, folder_name):
-    # Verifica se la cartella esiste
-    query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
     results = service.files().list(q=query, spaces="drive", fields="files(id, name)").execute()
-    files = results.get("files", [])
+    items = results.get("files", [])
 
-    if files:
-        return files[0]["id"]
+    if items:
+        return items[0]["id"]  # folder già esistente
 
-    # Altrimenti crea la cartella
     file_metadata = {
         "name": folder_name,
         "mimeType": "application/vnd.google-apps.folder"
@@ -30,30 +38,16 @@ def get_or_create_drive_folder(service, folder_name):
     return file.get("id")
 
 
-def upload_file_to_drive(file_path, service, folder_id):
-    file_name = os.path.basename(file_path)
+# ========================
+# UPLOAD FILE IN UNA CARTELLA
+# ========================
+def upload_file_to_drive(service, folder_id, file_path):
+    from googleapiclient.http import MediaFileUpload
+
     file_metadata = {
-        "name": file_name,
+        "name": os.path.basename(file_path),
         "parents": [folder_id]
     }
     media = MediaFileUpload(file_path, resumable=True)
-    service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-
-
-def download_all_from_drive(service, folder_id, local_dir):
-    if not os.path.exists(local_dir):
-        os.makedirs(local_dir)
-
-    query = f"'{folder_id}' in parents and trashed = false"
-    results = service.files().list(q=query, fields="files(id, name)").execute()
-    files = results.get("files", [])
-
-    for file in files:
-        file_id = file["id"]
-        file_name = file["name"]
-        request = service.files().get_media(fileId=file_id)
-        fh = io.FileIO(os.path.join(local_dir, file_name), "wb")
-        downloader = MediaIoBaseDownload(fh, request)
-        done = False
-        while not done:
-            _, done = downloader.next_chunk()
+    file = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+    return file.get("id")
