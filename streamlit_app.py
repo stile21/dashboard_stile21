@@ -50,7 +50,7 @@ with st.sidebar:
 
         if username and password:
             utenti = carica_utenti()
-            if username in utenti and verifica_password(password, utenti[username]):
+            if username in utenti and verifica_password(password, utenti[username]["password"]):
                 st.session_state.login_ok = True
                 st.session_state.username = username
                 st.rerun()
