@@ -50,21 +50,23 @@ with st.sidebar:
 
         if username and password:
             utenti = carica_utenti()
-            if username in utenti and verifica_password(password, utenti[username]["password"]):
-                st.session_state.login_ok = True
-                st.session_state.username = username
-                st.rerun()
+
+            if username in utenti:
+                password_hash = utenti[username]["password"]
+                if verifica_password(password, password_hash):
+                    st.session_state.login_ok = True
+                    st.session_state.username = username
+                    st.rerun()
+                else:
+                    st.error("❌ Password errata.")
             else:
-                st.error("Credenziali non valide.")
+                st.error("⚠️ Utente non trovato.")
     else:
         st.success(f"👋 Benvenuto, {st.session_state.username}")
         if st.button("🔓 Logout"):
             st.session_state.login_ok = False
             st.session_state.username = ""
             st.rerun()
-if not st.session_state.login_ok:
-    st.stop()
-
 username = st.session_state.username
 
 # Menu modifica utenti
