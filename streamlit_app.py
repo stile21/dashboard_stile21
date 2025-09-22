@@ -19,6 +19,7 @@ folder_utenti_id = get_or_create_drive_folder(service, "utenti")
 
 # Scarica tutti i file salvati da Google Drive all'avvio
 download_all_from_drive(service, folder_id, "dati_salvati")
+download_all_from_drive(service, folder_utenti_id, "utenti")
 
 st.markdown("""
     <style>
