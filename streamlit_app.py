@@ -79,17 +79,23 @@ if username == "admin":
     st.table(list(utenti.keys()))
 
     with st.expander("➕ Aggiungi o modifica utente"):
-        with st.form("form_nuovo_utente"):
-            nuovo_user = st.text_input("Nuovo username")
-            nuova_pass = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Salva utente")
-            if submitted:
-                if nuovo_user and nuova_pass:
-                    utenti[nuovo_user] = hash_password(nuova_pass)
-                    salva_utenti(utenti)
-                    st.success(f"Utente '{nuovo_user}' salvato.")
-                else:
-                    st.warning("Inserisci username e password.")
+    with st.form("form_nuovo_utente"):
+        nuovo_user = st.text_input("Nuovo username")
+        nuova_pass = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Salva utente")
+
+        if submitted:
+            if nuovo_user and nuova_pass:
+                utenti[nuovo_user] = {
+                    "password": hash_password(nuova_pass),
+                    "ruolo": "utente"
+                }
+                salva_utenti(utenti)
+                local_path = os.path.join("utenti", "utenti.json")
+                upload_file_to_drive(service, folder_utenti_id, local_path)
+                st.success(f"Utente '{nuovo_user}' salvato.")
+            else:
+                st.warning("Inserisci username e password.")
 
     with st.expander("🗑️ Rimuovi utente"):
         user_da_rimuovere = st.selectbox("Scegli utente", [u for u in utenti if u != "admin"])
