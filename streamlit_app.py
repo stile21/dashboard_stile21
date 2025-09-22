@@ -15,6 +15,7 @@ st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 # Connessione a Google Drive
 service = get_drive_service()
 folder_id = get_or_create_drive_folder(service, "dati_salvati")
+folder_utenti_id = get_or_create_drive_folder(service, "utenti")
 
 # Scarica tutti i file salvati da Google Drive all'avvio
 download_all_from_drive(service, folder_id, "dati_salvati")
