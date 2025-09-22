@@ -1,7 +1,8 @@
 import json
 import bcrypt
 
-FILE_UTENTI = "utenti.json"
+import os
+FILE_UTENTI = os.path.join("utenti", "utenti.json")
 
 def carica_utenti():
     try:
