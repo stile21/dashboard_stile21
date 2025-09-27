@@ -21,6 +21,11 @@ folder_utenti_id = get_or_create_drive_folder(service, "utenti")
 download_all_from_drive(service, folder_id, "dati_salvati")
 download_all_from_drive(service, folder_utenti_id, "utenti")
 
+# 🔧 Fix nome file
+for f in os.listdir("utenti"):
+    if f == "utenti" and not f.endswith(".json"):
+        os.rename(os.path.join("utenti", f), os.path.join("utenti", "utenti.json"))
+
 # Debug dopo il download
 file_path = os.path.join("utenti", "utenti.json")
 st.write("Esiste utenti.json:", os.path.exists(file_path))
