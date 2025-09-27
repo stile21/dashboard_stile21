@@ -16,18 +16,16 @@ st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 service = get_drive_service()
 folder_id = get_or_create_drive_folder(service, "dati_salvati")
 folder_utenti_id = get_or_create_drive_folder(service, "utenti")
-download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
 
 # Crea le cartelle locali se non esistono
-if not os.path.exists("dati_salvati"):
-    os.makedirs("dati_salvati")
+os.makedirs("dati_salvati", exist_ok=True)
+os.makedirs("utenti", exist_ok=True)
 
-if not os.path.exists("utenti"):
-    os.makedirs("utenti")
-    
 # Scarica tutti i file salvati da Google Drive all'avvio
 download_all_from_drive(service, folder_id, "dati_salvati")
-from drive_service import download_file_from_drive  # Forza download esplicito di utenti.json download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
+
+# ⬇️ Scarica esplicitamente utenti.json dalla cartella "utenti"
+download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
 
 # 🔧 Fix nome file
 for f in os.listdir("utenti"):
