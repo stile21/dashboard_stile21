@@ -6,7 +6,26 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 import io
 
+def download_file_from_drive(service, folder_id, filename, local_path):
+    from googleapiclient.http import MediaIoBaseDownload
+    import io
 
+    query = f"'{folder_id}' in parents and name = '{filename}' and trashed = false"
+    results = service.files().list(q=query, fields="files(id, name)").execute()
+    items = results.get("files", [])
+
+    if not items:
+        print(f"[Drive] File {filename} non trovato.")
+        return
+
+    file_id = items[0]['id']
+    request = service.files().get_media(fileId=file_id)
+    fh = io.FileIO(local_path, "wb")
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+        
 # ============================
 # CREA ISTANZA DI GOOGLE DRIVE
 # ============================
