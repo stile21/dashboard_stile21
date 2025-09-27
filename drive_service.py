@@ -11,7 +11,7 @@ import io
 # CREA ISTANZA DI GOOGLE DRIVE
 # ============================
 def get_drive_service():
-    creds_dict = dict(st.secrets["google_service_account"])  # copia modificabile
+    creds_dict = dict(st.secrets["gcp_service_account"])  # copia modificabile
 
     # Converte correttamente la private_key
     creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
