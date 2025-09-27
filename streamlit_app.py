@@ -26,7 +26,7 @@ if not os.path.exists("utenti"):
     
 # Scarica tutti i file salvati da Google Drive all'avvio
 download_all_from_drive(service, folder_id, "dati_salvati")
-download_all_from_drive(service, folder_utenti_id, "utenti")
+from drive_service import download_file_from_drive  # Forza download esplicito di utenti.json download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
 
 # 🔧 Fix nome file
 for f in os.listdir("utenti"):
