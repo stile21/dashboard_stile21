@@ -16,6 +16,7 @@ st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 service = get_drive_service()
 folder_id = get_or_create_drive_folder(service, "dati_salvati")
 folder_utenti_id = get_or_create_drive_folder(service, "utenti")
+download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
 
 # Crea le cartelle locali se non esistono
 if not os.path.exists("dati_salvati"):
