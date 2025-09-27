@@ -15,17 +15,21 @@ def download_file_from_drive(service, folder_id, filename, local_path):
     items = results.get("files", [])
 
     if not items:
-        print(f"[Drive] File {filename} non trovato.")
-        return
+        print(f"[Drive] ❌ File '{filename}' non trovato.")
+        return False
 
     file_id = items[0]['id']
     request = service.files().get_media(fileId=file_id)
     fh = io.FileIO(local_path, "wb")
     downloader = MediaIoBaseDownload(fh, request)
+    
     done = False
     while not done:
         status, done = downloader.next_chunk()
-        
+        print(f"[Drive] ⏬ Download '{filename}': {int(status.progress() * 100)}%")
+
+    print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
+    return True        
 # ============================
 # CREA ISTANZA DI GOOGLE DRIVE
 # ============================
@@ -89,12 +93,9 @@ def download_file_by_id(service, file_id, local_path):
     downloader = MediaIoBaseDownload(fh, request)
 
     done = False
-        while not done:
+    while not done:
         status, done = downloader.next_chunk()
-        print(f"[Drive] ⏬ Download '{filename}': {int(status.progress() * 100)}%")
-
-    print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
-    return True
+        print(f"[Drive] ⏬ Download file ID '{file_id}': {int(status.progress() * 100)}%")
 
     print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
     return True
@@ -109,11 +110,19 @@ def download_all_from_drive(service, folder_id, local_folder="dati_salvati"):
     ).execute()
 
     files = results.get("files", [])
+    print(f"[Drive] 🔍 Trovati {len(files)} file nella cartella con ID '{folder_id}'")
+
     for file in files:
-        request = service.files().get_media(fileId=file["id"])
         file_path = os.path.join(local_folder, file["name"])
+        request = service.files().get_media(fileId=file["id"])
         fh = io.FileIO(file_path, "wb")
         downloader = MediaIoBaseDownload(fh, request)
+
         done = False
         while not done:
             status, done = downloader.next_chunk()
+            print(f"[Drive] ⏬ Download '{file['name']}': {int(status.progress() * 100)}%")
+
+        print(f"[Drive] ✅ File salvato in: {file_path}")
+
+    return True
