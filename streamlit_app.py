@@ -17,7 +17,7 @@ st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 # Connessione a Google Drive
 service = get_drive_service()
 folder_id = get_or_create_drive_folder(service, "dati_salvati")
-folder_utenti_id = get_or_create_drive_folder(service, "utenti")
+folder_utenti_id = "1oTTpXvL35sfS9m66v27gCxF9TabZLXg_"
 
 # DEBUG FILE IN DRIVE
 st.write("📁 File nella cartella 'utenti' su Google Drive:")
