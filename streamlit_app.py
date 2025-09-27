@@ -37,7 +37,7 @@ st.markdown("""
     </style>
     <div id="footer-text">📊 Dashboard Incassi Stile21</div>
 """, unsafe_allow_html=True)
-st.write("DEBUG utenti.json", utenti)
+
 # Login
 with st.sidebar:
     st.header("🔐 Login")
@@ -68,7 +68,7 @@ if not st.session_state.login_ok:
     st.stop()
 
 username = st.session_state.username
-
+st.write("DEBUG utenti.json", utenti)
 # Menu modifica utenti
 if username == "admin":
     st.markdown("---")
