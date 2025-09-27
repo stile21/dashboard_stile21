@@ -1,10 +1,10 @@
 {
-  "stile21": {
-    "password": "$2b$12$G0mcwPHbEvBKMCjxb0WWuO1kAjmGaa5pd7CRpd8zFHvJ7KZinJ3yS",
-    "ruolo": "utente"
-  },
   "admin": {
-  "password": "$2b$12$DRKXyawMD92b15/VROUmoOg2AGy5t5UXZ973ERAIS/cbbVT2tmGn.",
-  "ruolo": "admin"
-}
+    "password": "$2b$12$XBc8Lt2obm72/I6xFPIWUuxQZJ7uSzdHfSg9WRLZxEKH/gAVZL5OS",
+    "ruolo": "admin"
+  },
+  "stile21": {
+    "password": "$2b$12$QcmwcPHbEvBKMCjxb0WWu01kAajmGaa5pd7CRpd8zFHvJ7KZinJ3yS",
+    "ruolo": "utente"
+  }
 }
