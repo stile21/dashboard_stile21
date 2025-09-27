@@ -4,7 +4,7 @@
     "ruolo": "utente"
   },
   "admin": {
-    "password": "$2b$12$XXeroNZALx7FpQTbqwGKqepHkjJgk.OhLbiK8.whPLpOYDRmjgRXK",
-    "ruolo": "admin"
-  }
+  "password": "$2b$12$DRKXyawMD92b15/VROUmoOg2AGy5t5UXZ973ERAIS/cbbVT2tmGn.",
+  "ruolo": "admin"
+}
 }
