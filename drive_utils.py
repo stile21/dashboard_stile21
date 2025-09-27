@@ -61,27 +61,26 @@ def upload_file_to_drive(service, folder_id, file_path):
 # DOWNLOAD TUTTI I FILE DELLA CARTELLA
 # ========================
 def download_file_from_drive(service, folder_id, filename, local_path):
-    import io
     from googleapiclient.http import MediaIoBaseDownload
+    import io
 
     query = f"'{folder_id}' in parents and name = '{filename}' and trashed = false"
-    results = service.files().list(q=query, fields="files(id, name)").execute()
+    results = service.files().list(q=query, spaces="drive", fields="files(id, name)").execute()
     items = results.get("files", [])
 
     if not items:
-        print(f"[Drive] File {filename} NON trovato in Drive.")
+        print(f"[Drive] ❌ File '{filename}' NON trovato nella cartella con ID: {folder_id}")
         return False
 
     file_id = items[0]['id']
     request = service.files().get_media(fileId=file_id)
-    fh = io.FileIO(local_path, "wb")
+    fh = io.FileIO(local_path, 'wb')
     downloader = MediaIoBaseDownload(fh, request)
 
     done = False
     while not done:
         status, done = downloader.next_chunk()
-        print(f"[Drive] Download {filename}: {int(status.progress() * 100)}%")
+        print(f"[Drive] ⏬ Download '{filename}': {int(status.progress() * 100)}%")
 
-    print(f"[Drive] Download COMPLETATO: {local_path}")
+    print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
     return True
-    
