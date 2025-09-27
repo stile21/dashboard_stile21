@@ -59,6 +59,14 @@ st.markdown("""
     <div id="footer-text">📊 Dashboard Incassi Stile21</div>
 """, unsafe_allow_html=True)
 
+if st.button("Elimina utente"):
+    if user_da_rimuovere in utenti:
+        del utenti[user_da_rimuovere]
+        salva_utenti(utenti)
+        local_path = os.path.join("utenti", "utenti.json")
+        upload_file_to_drive(service, folder_utenti_id, local_path)
+        st.success(f"Utente '{user_da_rimuovere}' eliminato.")
+        
 # Login
 with st.sidebar:
     st.header("🔐 Login")
