@@ -37,7 +37,7 @@ st.markdown("""
     </style>
     <div id="footer-text">📊 Dashboard Incassi Stile21</div>
 """, unsafe_allow_html=True)
-
+st.write("DEBUG utenti.json", utenti)
 # Login
 with st.sidebar:
     st.header("🔐 Login")
