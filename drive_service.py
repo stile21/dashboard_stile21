@@ -79,6 +79,26 @@ def upload_file_to_drive(service, folder_id, file_path):
 # ========================
 # DOWNLOAD TUTTI I FILE DELLA CARTELLA
 # ========================
+
+def download_file_by_id(service, file_id, local_path):
+    from googleapiclient.http import MediaIoBaseDownload
+    import io
+
+    request = service.files().get_media(fileId=file_id)
+    fh = io.FileIO(local_path, 'wb')
+    downloader = MediaIoBaseDownload(fh, request)
+
+    done = False
+        while not done:
+        status, done = downloader.next_chunk()
+        print(f"[Drive] ⏬ Download '{filename}': {int(status.progress() * 100)}%")
+
+    print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
+    return True
+
+    print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
+    return True
+    
 def download_all_from_drive(service, folder_id, local_folder="dati_salvati"):
     os.makedirs(local_folder, exist_ok=True)
 
