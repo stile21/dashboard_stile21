@@ -84,3 +84,4 @@ def download_file_from_drive(service, folder_id, filename, local_path):
 
     print(f"[Drive] ✅ Download COMPLETATO → {local_path}")
     return True
+    print(local_path)
