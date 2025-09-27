@@ -6,49 +6,9 @@ import os
 from fpdf import FPDF
 from datetime import datetime
 import base64
-from drive_utils import download_file_from_drive
 from login_utils import carica_utenti, salva_utenti, verifica_password, hash_password
-from drive_service import get_drive_service, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
-
-# Trigger cache reset
 # Layout + Footer
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
-
-# Connessione a Google Drive
-service = get_drive_service()
-folder_id = get_or_create_drive_folder(service, "dati_salvati")
-folder_utenti_id = "1oTTpXvL35sfS9m66v27gCxF9TabZLXg_"
-
-# DEBUG FILE IN DRIVE
-st.write("📁 File nella cartella 'utenti' su Google Drive:")
-results = service.files().list(q=f"'{folder_utenti_id}' in parents and trashed=false",
-                               spaces="drive", fields="files(id, name)").execute()
-file_list = [f["name"] for f in results.get("files", [])]
-st.write(file_list)
-
-# Crea le cartelle locali se non esistono
-os.makedirs("dati_salvati", exist_ok=True)
-os.makedirs("utenti", exist_ok=True)
-
-# Scarica tutti i file salvati da Google Drive all'avvio
-download_all_from_drive(service, folder_id, "dati_salvati")
-ok = download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
-st.write("✅ Download riuscito:", ok)
-
-# 🔧 Fix nome file
-for f in os.listdir("utenti"):
-    if f == "utenti" and not f.endswith(".json"):
-        os.rename(os.path.join("utenti", f), os.path.join("utenti", "utenti.json"))
-
-# Debug dopo il download
-file_path = os.path.join("utenti", "utenti.json")
-st.write("Esiste utenti.json:", os.path.exists(file_path))
-
-if os.path.exists(file_path):
-    with open(file_path, "r") as f:
-        raw = f.read()
-    st.write("Contenuto RAW utenti.json:", raw)
-
 st.markdown("""
     <style>
         #footer-text {
@@ -66,14 +26,6 @@ st.markdown("""
     <div id="footer-text">📊 Dashboard Incassi Stile21</div>
 """, unsafe_allow_html=True)
 
-if st.button("Elimina utente"):
-    if user_da_rimuovere in utenti:
-        del utenti[user_da_rimuovere]
-        salva_utenti(utenti)
-        local_path = os.path.join("utenti", "utenti.json")
-        upload_file_to_drive(service, folder_utenti_id, local_path)
-        st.success(f"Utente '{user_da_rimuovere}' eliminato.")
-        
 # Login
 with st.sidebar:
     st.header("🔐 Login")
@@ -88,8 +40,7 @@ with st.sidebar:
 
         if username and password:
             utenti = carica_utenti()
-            st.write("DEBUG utenti.json", utenti)
-            if username in utenti and verifica_password(password, utenti[username]["password"]):
+            if username in utenti and verifica_password(password, utenti[username]):
                 st.session_state.login_ok = True
                 st.session_state.username = username
                 st.rerun()
@@ -120,16 +71,10 @@ if username == "admin":
             nuovo_user = st.text_input("Nuovo username")
             nuova_pass = st.text_input("Password", type="password")
             submitted = st.form_submit_button("Salva utente")
-
             if submitted:
                 if nuovo_user and nuova_pass:
-                    utenti[nuovo_user] = {
-                        "password": hash_password(nuova_pass),
-                        "ruolo": "utente"
-                    }
+                    utenti[nuovo_user] = hash_password(nuova_pass)
                     salva_utenti(utenti)
-                    local_path = os.path.join("utenti", "utenti.json")
-                    upload_file_to_drive(service, folder_utenti_id, local_path)
                     st.success(f"Utente '{nuovo_user}' salvato.")
                 else:
                     st.warning("Inserisci username e password.")
@@ -166,11 +111,9 @@ if not os.path.exists("dati_salvati"):
 
 if uploaded_file:
     nome_file = uploaded_file.name
-    local_path = os.path.join("dati_salvati", nome_file)
-    with open(local_path, "wb") as f:
+    with open(os.path.join("dati_salvati", nome_file), "wb") as f:
         f.write(uploaded_file.getbuffer())
-    upload_file_to_drive(service, folder_id, local_path)
-    st.success(f"✅ File salvato localmente e su Google Drive: {nome_file}")
+    st.success(f"File salvato come {nome_file}")
 
 # Carica tutti i dati salvati
 all_dfs = []
