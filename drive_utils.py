@@ -67,6 +67,7 @@ def download_file_from_drive(service, folder_id, filename, local_path):
     query = f"'{folder_id}' in parents and name = '{filename}' and trashed = false"
     results = service.files().list(q=query, spaces="drive", fields="files(id, name)").execute()
     items = results.get("files", [])
+    print("DEBUG items:", items)
 
     if not items:
         print(f"[Drive] ❌ File '{filename}' NON trovato nella cartella con ID: {folder_id}")
