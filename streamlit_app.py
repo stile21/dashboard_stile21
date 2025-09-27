@@ -19,6 +19,13 @@ service = get_drive_service()
 folder_id = get_or_create_drive_folder(service, "dati_salvati")
 folder_utenti_id = get_or_create_drive_folder(service, "utenti")
 
+# DEBUG FILE IN DRIVE
+st.write("📁 File nella cartella 'utenti' su Google Drive:")
+results = service.files().list(q=f"'{folder_utenti_id}' in parents and trashed=false",
+                               spaces="drive", fields="files(id, name)").execute()
+file_list = [f["name"] for f in results.get("files", [])]
+st.write(file_list)
+
 # Crea le cartelle locali se non esistono
 os.makedirs("dati_salvati", exist_ok=True)
 os.makedirs("utenti", exist_ok=True)
