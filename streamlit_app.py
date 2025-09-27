@@ -21,6 +21,15 @@ folder_utenti_id = get_or_create_drive_folder(service, "utenti")
 download_all_from_drive(service, folder_id, "dati_salvati")
 download_all_from_drive(service, folder_utenti_id, "utenti")
 
+# Debug dopo il download
+file_path = os.path.join("utenti", "utenti.json")
+st.write("Esiste utenti.json:", os.path.exists(file_path))
+
+if os.path.exists(file_path):
+    with open(file_path, "r") as f:
+        raw = f.read()
+    st.write("Contenuto RAW utenti.json:", raw)
+
 st.markdown("""
     <style>
         #footer-text {
