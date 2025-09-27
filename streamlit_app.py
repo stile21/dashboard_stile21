@@ -52,6 +52,7 @@ with st.sidebar:
 
         if username and password:
             utenti = carica_utenti()
+            st.write("DEBUG utenti.json", utenti)
             if username in utenti and verifica_password(password, utenti[username]["password"]):
                 st.session_state.login_ok = True
                 st.session_state.username = username
@@ -68,7 +69,7 @@ if not st.session_state.login_ok:
     st.stop()
 
 username = st.session_state.username
-st.write("DEBUG utenti.json", utenti)
+
 # Menu modifica utenti
 if username == "admin":
     st.markdown("---")
