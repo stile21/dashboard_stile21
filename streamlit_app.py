@@ -25,9 +25,8 @@ os.makedirs("utenti", exist_ok=True)
 
 # Scarica tutti i file salvati da Google Drive all'avvio
 download_all_from_drive(service, folder_id, "dati_salvati")
-
-# ⬇️ Scarica esplicitamente utenti.json dalla cartella "utenti"
-download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
+ok = download_file_from_drive(service, folder_utenti_id, "utenti.json", os.path.join("utenti", "utenti.json"))
+st.write("✅ Download riuscito:", ok)
 
 # 🔧 Fix nome file
 for f in os.listdir("utenti"):
