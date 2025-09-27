@@ -17,6 +17,13 @@ service = get_drive_service()
 folder_id = get_or_create_drive_folder(service, "dati_salvati")
 folder_utenti_id = get_or_create_drive_folder(service, "utenti")
 
+# Crea le cartelle locali se non esistono
+if not os.path.exists("dati_salvati"):
+    os.makedirs("dati_salvati")
+
+if not os.path.exists("utenti"):
+    os.makedirs("utenti")
+    
 # Scarica tutti i file salvati da Google Drive all'avvio
 download_all_from_drive(service, folder_id, "dati_salvati")
 download_all_from_drive(service, folder_utenti_id, "utenti")
