@@ -1,0 +1,13 @@
+streamlit
+pandas
+matplotlib
+openpyxl
+plotly
+fpdf2
+bcrypt
+holidays
+pydrive2
+streamlit
+pydrive2
+oauth2client
+PyDrive
