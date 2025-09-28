@@ -10,6 +10,38 @@ from login_utils import carica_utenti, salva_utenti, verifica_password, hash_pas
 from drive_service import get_drive_service, get_or_create_drive_folder, upload_file_to_drive, download_all_from_drive
 
 
+# Layout
+st.set_page_config(layout="wide")
+
+# --- HEADER con logo e pulsanti ---
+col_logo, col_btns = st.columns([1,2])  # logo a sinistra, pulsanti a destra
+
+with col_logo:
+    st.image("logo.png", width=150)  # sostituisci con il tuo logo
+
+with col_btns:
+    st.markdown(
+        """
+        <div style="display: flex; justify-content: flex-end; gap: 20px; align-items: center; height:100%;">
+            <a href="#confronto-negozi">
+                <button style="background-color:#4DA6FF; color:white; border:none; padding:10px 20px; 
+                               border-radius:10px; cursor:pointer; font-size:16px;">
+                    Confronto tra negozi
+                </button>
+            </a>
+            <a href="#confronto-periodi">
+                <button style="background-color:#4DA6FF; color:white; border:none; padding:10px 20px; 
+                               border-radius:10px; cursor:pointer; font-size:16px;">
+                    Confronto tra periodi
+                </button>
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+st.write("---")
+
 # Layout + Footer
 st.set_page_config(page_title="Dashboard Incassi Stile21", layout="wide")
 
@@ -280,6 +312,9 @@ if username == "admin":
 # Confronto tra negozi
 # -----------------------
 
+st.markdown("<h2 id='confronto-negozi'>📊 Confronto tra negozi</h2>", unsafe_allow_html=True)
+st.write("Contenuto della sezione confronto tra negozi...")
+
 # Mostra logo centrato sopra il titolo "Confronto tra negozi"
 if os.path.exists("logo.png"):
     st.markdown(
@@ -388,6 +423,9 @@ for col in colonne_confronto:
 # -----------------------
 # Confronto tra periodi
 # -----------------------
+st.markdown("<h2 id='confronto-periodi'>⏳ Confronto tra periodi dello stesso negozio</h2>", unsafe_allow_html=True)
+st.write("Contenuto della sezione confronto tra periodi...")
+
 st.markdown("---")
 col_titolo_p, col_btn_p = st.columns([4, 1])
 
